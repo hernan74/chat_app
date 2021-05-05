@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:get/get.dart';
-
 import 'package:chat_app/utils/size_scream_util.dart';
 import 'package:chat_app/widget/button_widget.dart';
 import 'package:chat_app/widget/fondo_login_widget.dart';
@@ -34,7 +32,7 @@ class RegisterPage extends StatelessWidget {
                     color: Colors.white,
                     size: 40,
                   ),
-                  onPressed: () => Get.offAndToNamed('login')),
+                  onPressed: () => Navigator.pushNamed(context, 'login')),
             ),
             Container(
               height: 600,
@@ -73,7 +71,8 @@ class RegisterPage extends StatelessWidget {
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                onPressed: () => Get.offAndToNamed('login'))
+                                onPressed: () =>
+                                    Navigator.pushNamed(context, 'login'))
                           ],
                         ),
                       )

@@ -7,7 +7,6 @@ import 'package:chat_app/widget/opacity_animation.dart';
 import 'package:chat_app/widget/textfield_widget.dart';
 
 import 'package:chat_app/helpers/helpers.dart' as estilo;
-import 'package:get/get.dart';
 
 class LoginPage extends StatelessWidget {
   @override
@@ -61,7 +60,8 @@ class LoginPage extends StatelessWidget {
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                onPressed: () => Get.toNamed('register'))
+                                onPressed: () =>
+                                    Navigator.pushNamed(context, 'register'))
                           ],
                         ),
                       )
@@ -174,25 +174,24 @@ class _FormularioLogin extends StatelessWidget {
                   sizeMin: 0,
                   sizeMax: 60)),
           ButtonWidget(
-            widget: Text('Login',
-                style: TextStyle(
-                    color: estilo.colorTextoBoton,
-                    fontWeight: FontWeight.bold,
-                    fontSize: sizeScreemUtil(
-                        sizeActual: this.altoMaximo * 5.5 / 100,
-                        sizeMin: 10,
-                        sizeMax: 22))),
-            ancho: this.anchoMaximo * 80 / 100,
-            alto: this.altoMaximo * 15 / 100,
-            utilizaGradiente: true,
-            //TODO Validar datos
-            colorGradienteInicio:
-                (true) ? estilo.colorPrimarioDos : Colors.grey,
-            colorGradienteFinal: (true) ? estilo.colorPrimarioUno : Colors.grey,
-            onPressed: () {
-              //TODO validar login
-            },
-          ),
+              widget: Text('Login',
+                  style: TextStyle(
+                      color: estilo.colorTextoBoton,
+                      fontWeight: FontWeight.bold,
+                      fontSize: sizeScreemUtil(
+                          sizeActual: this.altoMaximo * 5.5 / 100,
+                          sizeMin: 10,
+                          sizeMax: 22))),
+              ancho: this.anchoMaximo * 80 / 100,
+              alto: this.altoMaximo * 15 / 100,
+              utilizaGradiente: true,
+              //TODO Validar datos
+              colorGradienteInicio:
+                  (true) ? estilo.colorPrimarioDos : Colors.grey,
+              colorGradienteFinal:
+                  (true) ? estilo.colorPrimarioUno : Colors.grey,
+              onPressed: () =>
+                  Navigator.pushReplacementNamed(context, 'usuarios')),
         ],
       ),
     );
