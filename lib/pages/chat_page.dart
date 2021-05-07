@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'package:chat_app/chat/chat_bloc.dart';
+import 'package:chat_app/bloc/chat/chat_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:chat_app/widget/chat_mensaje.dart';
+
 import 'package:chat_app/helpers/helpers.dart' as estilo;
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatPage extends StatefulWidget {
   @override

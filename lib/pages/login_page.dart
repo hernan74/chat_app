@@ -1,3 +1,4 @@
+import 'package:chat_app/bloc/login/login_bloc.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chat_app/utils/size_scream_util.dart';
@@ -7,6 +8,7 @@ import 'package:chat_app/widget/opacity_animation.dart';
 import 'package:chat_app/widget/textfield_widget.dart';
 
 import 'package:chat_app/helpers/helpers.dart' as estilo;
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginPage extends StatelessWidget {
   @override
@@ -60,8 +62,12 @@ class LoginPage extends StatelessWidget {
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                onPressed: () =>
-                                    Navigator.pushNamed(context, 'register'))
+                                onPressed: () async {
+                                  await Navigator.pushNamed(
+                                      context, 'register');
+                                  BlocProvider.of<LoginBloc>(context)
+                                      .add(OnInitLoginEvent());
+                                })
                           ],
                         ),
                       )
@@ -100,99 +106,145 @@ class _Titulo extends StatelessWidget {
   }
 }
 
-class _FormularioLogin extends StatelessWidget {
+class _FormularioLogin extends StatefulWidget {
   final double altoMaximo;
   final double anchoMaximo;
 
   const _FormularioLogin({this.altoMaximo, this.anchoMaximo});
 
   @override
+  __FormularioLoginState createState() => __FormularioLoginState();
+}
+
+class __FormularioLoginState extends State<_FormularioLogin> {
+  final TextEditingController _emailController = new TextEditingController();
+  final TextEditingController _passwordController = new TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Form(
-      child: Column(
-        children: <Widget>[
-          TextfieldWidget(
-            alto: sizeScreemUtil(
-                sizeActual: this.altoMaximo * 15 / 100,
-                sizeMin: 10,
-                sizeMax: 55),
-            icono: Icons.markunread_sharp,
-            colorGradienteIconoInicio: estilo.colorPrimarioUno,
-            colorGradienteIconoFin: estilo.colorPrimarioUnoGradiente,
-            hintTextSize: sizeScreemUtil(
-                sizeActual: this.altoMaximo * 5.5 / 100,
-                sizeMin: 10,
-                sizeMax: 22),
-            hindText: 'Email',
-            onChanged: (value) {
-              //TODO tomar datos
-            },
-          ),
-          SizedBox(
-            height: sizeScreemUtil(
-                sizeActual: this.altoMaximo * 4.5 / 100,
-                sizeMin: 10,
-                sizeMax: 20),
-          ),
-          TextfieldWidget(
-            alto: sizeScreemUtil(
-                sizeActual: this.altoMaximo * 15 / 100,
-                sizeMin: 10,
-                sizeMax: 55),
-            iconoIzquida: true,
-            icono: Icons.vpn_key_sharp,
-            colorGradienteIconoInicio: estilo.colorPrimarioDos,
-            colorGradienteIconoFin: estilo.colorPrimarioDosGradiente,
-            hindText: 'Contraseña',
-            hintTextSize: sizeScreemUtil(
-                sizeActual: this.altoMaximo * 5.5 / 100,
-                sizeMin: 10,
-                sizeMax: 22),
-            obscureText: true,
-            onChanged: (value) {
-              //TODO tomar datos
-            },
-          ),
-          SizedBox(
+    return BlocListener<LoginBloc, LoginState>(
+      listenWhen: (previous, current) => (current is OnLoginState),
+      listener: (_, state) {
+        print('Se disparo el listener para login');
+        if (state.valido) {
+          Navigator.pushReplacementNamed(context, 'usuarios');
+        }
+      },
+      child: Form(
+        child: Column(
+          children: <Widget>[
+            TextfieldWidget(
+              controller: _emailController,
+              alto: sizeScreemUtil(
+                  sizeActual: this.widget.altoMaximo * 15 / 100,
+                  sizeMin: 10,
+                  sizeMax: 55),
+              icono: Icons.markunread_sharp,
+              colorGradienteIconoInicio: estilo.colorPrimarioUno,
+              colorGradienteIconoFin: estilo.colorPrimarioUnoGradiente,
+              hintTextSize: sizeScreemUtil(
+                  sizeActual: this.widget.altoMaximo * 5.5 / 100,
+                  sizeMin: 10,
+                  sizeMax: 22),
+              hindText: 'Email',
+              onChanged: (value) {
+                BlocProvider.of<LoginBloc>(context, listen: false).add(
+                    OnValidaCamposEvent(
+                        _emailController.text, _passwordController.text));
+              },
+            ),
+            SizedBox(
               height: sizeScreemUtil(
-                  sizeActual: this.altoMaximo * 5 / 100,
-                  sizeMin: 0,
-                  sizeMax: 20)),
-          Text(
-            ' state.error',
-            style: TextStyle(
-                fontSize: sizeScreemUtil(
-                    sizeActual: this.altoMaximo * 4.8 / 100,
-                    sizeMin: 10,
-                    sizeMax: 22),
-                color: estilo.colorError,
-                fontWeight: FontWeight.bold),
-          ),
-          SizedBox(
-              height: sizeScreemUtil(
-                  sizeActual: this.altoMaximo * 10 / 100,
-                  sizeMin: 0,
-                  sizeMax: 60)),
-          ButtonWidget(
-              widget: Text('Login',
+                  sizeActual: this.widget.altoMaximo * 4.5 / 100,
+                  sizeMin: 10,
+                  sizeMax: 20),
+            ),
+            TextfieldWidget(
+              controller: _passwordController,
+              alto: sizeScreemUtil(
+                  sizeActual: this.widget.altoMaximo * 15 / 100,
+                  sizeMin: 10,
+                  sizeMax: 55),
+              iconoIzquida: true,
+              icono: Icons.vpn_key_sharp,
+              colorGradienteIconoInicio: estilo.colorPrimarioDos,
+              colorGradienteIconoFin: estilo.colorPrimarioDosGradiente,
+              hindText: 'Contraseña',
+              hintTextSize: sizeScreemUtil(
+                  sizeActual: this.widget.altoMaximo * 5.5 / 100,
+                  sizeMin: 10,
+                  sizeMax: 22),
+              obscureText: true,
+              onChanged: (value) {
+                BlocProvider.of<LoginBloc>(context, listen: false).add(
+                    OnValidaCamposEvent(
+                        _emailController.text, _passwordController.text));
+              },
+            ),
+            SizedBox(
+                height: sizeScreemUtil(
+                    sizeActual: this.widget.altoMaximo * 5 / 100,
+                    sizeMin: 0,
+                    sizeMax: 20)),
+            BlocBuilder<LoginBloc, LoginState>(
+              buildWhen: (previous, current) => (current is OnLoginState),
+              builder: (context, state) {
+                return Text(
+                  state.msError,
                   style: TextStyle(
-                      color: estilo.colorTextoBoton,
-                      fontWeight: FontWeight.bold,
                       fontSize: sizeScreemUtil(
-                          sizeActual: this.altoMaximo * 5.5 / 100,
+                          sizeActual: this.widget.altoMaximo * 4.8 / 100,
                           sizeMin: 10,
-                          sizeMax: 22))),
-              ancho: this.anchoMaximo * 80 / 100,
-              alto: this.altoMaximo * 15 / 100,
-              utilizaGradiente: true,
-              //TODO Validar datos
-              colorGradienteInicio:
-                  (true) ? estilo.colorPrimarioDos : Colors.grey,
-              colorGradienteFinal:
-                  (true) ? estilo.colorPrimarioUno : Colors.grey,
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, 'usuarios')),
-        ],
+                          sizeMax: 22),
+                      color: estilo.colorError,
+                      fontWeight: FontWeight.bold),
+                );
+              },
+            ),
+            SizedBox(
+                height: sizeScreemUtil(
+                    sizeActual: this.widget.altoMaximo * 10 / 100,
+                    sizeMin: 0,
+                    sizeMax: 60)),
+            BlocBuilder<LoginBloc, LoginState>(buildWhen: (previous, current) {
+              return !(current is OnRegisterState);
+            }, builder: (_, state) {
+              print('Se construyo el boton de login');
+              return ButtonWidget(
+                  widget: Text('Login',
+                      style: TextStyle(
+                          color: estilo.colorTextoBoton,
+                          fontWeight: FontWeight.bold,
+                          fontSize: sizeScreemUtil(
+                              sizeActual: this.widget.altoMaximo * 5.5 / 100,
+                              sizeMin: 10,
+                              sizeMax: 22))),
+                  ancho: this.widget.anchoMaximo * 80 / 100,
+                  alto: this.widget.altoMaximo * 15 / 100,
+                  utilizaGradiente: true,
+                  //TODO Validar datos
+                  colorGradienteInicio: (state.valido && !state.isLoading)
+                      ? estilo.colorPrimarioDos
+                      : Colors.grey,
+                  colorGradienteFinal: (state.valido && !state.isLoading)
+                      ? estilo.colorPrimarioUno
+                      : Colors.grey,
+                  onPressed: () {
+                    if (state.valido || state.isLoading) {
+                      BlocProvider.of<LoginBloc>(context).add(OnLoginEvent(
+                          _emailController.text, _passwordController.text));
+                    }
+                  });
+            }),
+          ],
+        ),
       ),
     );
   }

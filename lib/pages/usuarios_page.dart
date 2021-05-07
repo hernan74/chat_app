@@ -1,4 +1,6 @@
+import 'package:chat_app/bloc/login/login_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -21,39 +23,55 @@ class UsuariosPage extends StatelessWidget {
       Usuario(
           online: false, email: 'test4@test.com', nombre: 'Nahuel', uid: '4'),
     ];
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Mi nombre'),
-        centerTitle: true,
-        backgroundColor: estilo.colorPrimarioUno.withOpacity(0.9),
-        elevation: 1,
-        leading: IconButton(
-          icon: Icon(Icons.logout),
-          onPressed: () => Navigator.pushReplacementNamed(context, 'login'),
+
+    return BlocListener<LoginBloc, LoginState>(
+      listenWhen: (previous, current) => (current is OnLogoutState),
+      listener: (_, state) {
+        print('Se disparo el listener para logout');
+        Navigator.pushReplacementNamed(context, 'login');
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: BlocBuilder<LoginBloc, LoginState>(
+            buildWhen: (previous, current) =>
+                (current is OnLoginState || current is OnRenewTokenState),
+            builder: (_, state) {
+              return Text(state.nombre);
+            },
+          ),
+          centerTitle: true,
+          backgroundColor: estilo.colorPrimarioUno.withOpacity(0.9),
+          elevation: 1,
+          leading: IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () =>
+                BlocProvider.of<LoginBloc>(context).add(OnLogoutEvent()),
+          ),
+          actions: [
+            IconButton(
+                icon: Icon(
+                  Icons.cloud,
+                  color: Colors.blue,
+                ),
+                onPressed: () =>
+                    null //Navigator.pushReplacementNamed(context, 'login'),
+                ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.cloud,
-              color: Colors.blue,
+        body: Container(
+          child: SmartRefresher(
+            controller: _refreshController,
+            enablePullDown: true,
+            header: WaterDropHeader(
+              complete: Icon(
+                Icons.check,
+                color: Colors.blue,
+              ),
+              waterDropColor: Colors.blue,
             ),
-            onPressed: () => Navigator.pushReplacementNamed(context, 'login'),
+            onRefresh: _cargarUsuario,
+            child: _ListaUsuarios(usuarios: usuarios),
           ),
-        ],
-      ),
-      body: Container(
-        child: SmartRefresher(
-          controller: _refreshController,
-          enablePullDown: true,
-          header: WaterDropHeader(
-            complete: Icon(
-              Icons.check,
-              color: Colors.blue,
-            ),
-            waterDropColor: Colors.blue,
-          ),
-          onRefresh: _cargarUsuario,
-          child: _ListaUsuarios(usuarios: usuarios),
         ),
       ),
     );

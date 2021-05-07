@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:chat_app/chat/chat_bloc.dart';
-import 'bloc/usuario/usuario_bloc.dart';
+import 'package:chat_app/bloc/usuario/usuario_bloc.dart';
+import 'package:chat_app/bloc/chat/chat_bloc.dart';
+import 'package:chat_app/bloc/login/login_bloc.dart';
 
 import 'package:chat_app/routes/routes.dart';
 
@@ -15,11 +16,12 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<UsuarioBloc>(create: (_) => UsuarioBloc()),
         BlocProvider<ChatBloc>(create: (_) => ChatBloc()),
+        BlocProvider<LoginBloc>(create: (_) => LoginBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: ' Titulo',
-        initialRoute: 'chat',
+        initialRoute: 'loading',
         routes: appRoutes,
       ),
     );
