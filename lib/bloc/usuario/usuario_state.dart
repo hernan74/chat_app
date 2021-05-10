@@ -2,20 +2,34 @@ part of 'usuario_bloc.dart';
 
 @immutable
 class UsuarioState {
-  final Usuario usuario;
   final List<Usuario> usuarios;
 
-  UsuarioState({this.usuarios, this.usuario});
+  final bool isLoading;
 
-  UsuarioState copyWith({
-    usuario,
-    usuarios,
-    chat,
-  }) =>
+  final bool ok;
+  final String msError;
+
+  UsuarioState({
+    this.usuarios,
+    this.isLoading = false,
+    this.ok = false,
+    this.msError = '',
+  });
+
+  UsuarioState copyWith(
+          {List<Usuario> usuarios, bool isLoading, bool ok, String msError}) =>
       UsuarioState(
-        usuario: usuario ?? this.usuario,
         usuarios: usuarios ?? this.usuarios,
       );
 
   UsuarioState initState() => UsuarioState();
+}
+
+class OnObtenerUsuariosState extends UsuarioState {
+  OnObtenerUsuariosState({UsuarioState state})
+      : super(
+            usuarios: state.usuarios,
+            isLoading: state.isLoading,
+            msError: state.msError,
+            ok: state.ok);
 }

@@ -1,10 +1,12 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
-import 'package:chat_app/models/usuario.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
 import 'package:meta/meta.dart';
+
+import 'package:bloc/bloc.dart';
+
+import 'package:chat_app/models/usuario.dart';
+import 'package:chat_app/services/secure_storage.dart';
+import 'package:chat_app/services/socket_service.dart';
 
 import 'package:chat_app/models/login_response.dart';
 import 'package:chat_app/services/auth_service.dart';
@@ -15,14 +17,9 @@ part 'login_state.dart';
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginState());
 
-  final _storage = new FlutterSecureStorage();
+  final _storage = new SecureStorage();
   final authService = new AuthService();
-
-  static Future<String> getToken() async {
-    final _storage = new FlutterSecureStorage();
-    final token = await _storage.read(key: 'key');
-    return token;
-  }
+  final _socketServer = new SocketService();
 
   @override
   Stream<LoginState> mapEventToState(
@@ -33,7 +30,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } else if (event is OnLoginEvent) {
       yield* _onLogin(event);
     } else if (event is OnLogoutEvent) {
-      await _storage.delete(key: 'token');
+      await _storage.storage.delete(key: 'token');
+      _storage.storage.delete(key: 'token');
+      _socketServer.disconect();
       yield OnLogoutState();
     } else if (event is OnRegisterEvent) {
       yield* _onRegister(event);
@@ -43,11 +42,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       yield* _onRenewToken(event);
     }
   }
+  
 
   Stream<LoginState> _onValidarCampos(OnValidaCamposEvent event) async* {
     final validacion = validarCampos(event.email, event.password);
     yield OnValidacionState(state: state.copyWith(valido: validacion));
   }
+
+
 
   Stream<LoginState> _onLogin(OnLoginEvent event) async* {
     yield OnLoginState(
@@ -60,7 +62,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await authService.login(event.email, event.password);
     if (respuesta == null) return;
     if (respuesta.ok) {
-      await _storage.write(key: 'token', value: respuesta.token);
+      await _storage.storage.write(key: 'token', value: respuesta.token);
+      _socketServer.connect(respuesta.token);
+    } else {
+      _storage.storage.delete(key: 'token');
+      _socketServer.disconect();
     }
     yield OnLoginState(
         state: state.copyWith(
@@ -120,8 +126,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     yield OnRenewTokenState(
         state: state.copyWith(isLoading: true, valido: false));
     final LoginResponse respuesta =
-        await authService.renovarJWT(await _storage.read(key: 'token'));
-    print(await _storage.read(key: 'token'));
+        await authService.renovarJWT(await _storage.storage.read(key: 'token'));
+    print(await _storage.storage.read(key: 'token'));
     if (respuesta == null) {
       yield OnRenewTokenState(
           state: state.copyWith(
@@ -130,7 +136,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
               msError: 'Error de conexion con el servidor'));
     }
     if (respuesta.ok) {
-      _storage.write(key: 'token', value: respuesta.token);
+      _storage.storage.write(key: 'token', value: respuesta.token);
+      _socketServer.connect(respuesta.token);
+    } else {
+      _storage.storage.delete(key: 'token');
+      _socketServer.disconect();
     }
     yield OnRenewTokenState(
         state: state.copyWith(

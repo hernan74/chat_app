@@ -3,12 +3,20 @@ part of 'login_bloc.dart';
 @immutable
 abstract class LoginEvent {}
 
+
+
 class OnValidaCamposEvent extends LoginEvent {
   final String email;
   final String password;
 
   OnValidaCamposEvent(this.email, this.password);
 }
+
+
+
+
+
+
 
 class OnInitLoginEvent extends LoginEvent {}
 

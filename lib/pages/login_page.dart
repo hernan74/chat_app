@@ -196,6 +196,7 @@ class __FormularioLoginState extends State<_FormularioLogin> {
             BlocBuilder<LoginBloc, LoginState>(
               buildWhen: (previous, current) => (current is OnLoginState),
               builder: (context, state) {
+                print('Se dibuja el campo de texto de error');
                 return Text(
                   state.msError,
                   style: TextStyle(
@@ -214,7 +215,8 @@ class __FormularioLoginState extends State<_FormularioLogin> {
                     sizeMin: 0,
                     sizeMax: 60)),
             BlocBuilder<LoginBloc, LoginState>(buildWhen: (previous, current) {
-              return !(current is OnRegisterState);
+              return !(current is OnRegisterState) &&
+                  (previous.valido != current.valido);
             }, builder: (_, state) {
               print('Se construyo el boton de login');
               return ButtonWidget(

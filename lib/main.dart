@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chat_app/bloc/usuario/usuario_bloc.dart';
 import 'package:chat_app/bloc/chat/chat_bloc.dart';
 import 'package:chat_app/bloc/login/login_bloc.dart';
+import 'package:chat_app/bloc/status_server/server_status_bloc.dart';
 
 import 'package:chat_app/routes/routes.dart';
 
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
         BlocProvider<UsuarioBloc>(create: (_) => UsuarioBloc()),
         BlocProvider<ChatBloc>(create: (_) => ChatBloc()),
         BlocProvider<LoginBloc>(create: (_) => LoginBloc()),
+        BlocProvider<ServerStatusBloc>(create: (_) => ServerStatusBloc()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

@@ -9,4 +9,19 @@ class OnEnviarMensaje extends ChatEvent {
   OnEnviarMensaje(this.mensaje);
 }
 
+class OnRecibirMensaje extends ChatEvent {
+  final ChatModel mensaje;
+
+  OnRecibirMensaje(this.mensaje);
+}
+
 class OnObtenerMensajes extends ChatEvent {}
+
+class OnEstablecerReceptorEvent extends ChatEvent {
+  final Usuario propietario;
+  final Usuario receptor;
+
+  OnEstablecerReceptorEvent(this.propietario, this.receptor);
+}
+
+class OnInitChatEvent extends ChatEvent {}

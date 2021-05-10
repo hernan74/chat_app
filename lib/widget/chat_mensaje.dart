@@ -5,9 +5,13 @@ import 'package:chat_app/models/chat_model.dart';
 
 class ChatMensaje extends StatelessWidget {
   final ChatModel chat;
+  final String uidPropietario;
   final AnimationController animationController;
 
-  const ChatMensaje({@required this.chat, @required this.animationController});
+  const ChatMensaje(
+      {@required this.chat,
+      @required this.animationController,
+      @required this.uidPropietario});
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
@@ -16,7 +20,9 @@ class ChatMensaje extends StatelessWidget {
         sizeFactor:
             CurvedAnimation(parent: animationController, curve: Curves.easeOut),
         child: Container(
-          child: this.chat.uid == '123' ? _miMensaje() : _contactoMensaje(),
+          child: this.chat.uid == this.uidPropietario
+              ? _miMensaje()
+              : _contactoMensaje(),
         ),
       ),
     );

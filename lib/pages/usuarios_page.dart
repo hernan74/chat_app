@@ -1,11 +1,17 @@
-import 'package:chat_app/bloc/login/login_bloc.dart';
+import 'package:chat_app/bloc/chat/chat_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import 'package:chat_app/bloc/login/login_bloc.dart';
+import 'package:chat_app/bloc/status_server/server_status_bloc.dart';
+import 'package:chat_app/bloc/usuario/usuario_bloc.dart';
+import 'package:chat_app/services/socket_service.dart';
+import 'package:chat_app/widget/loading_widget.dart';
 import 'package:chat_app/models/usuario.dart';
 import 'package:chat_app/widget/item_lista_usuarios_widget.dart';
+
 import 'package:chat_app/helpers/helpers.dart' as estilo;
 
 class UsuariosPage extends StatelessWidget {
@@ -14,74 +20,97 @@ class UsuariosPage extends StatelessWidget {
     RefreshController _refreshController =
         RefreshController(initialRefresh: false);
 
-    final List<Usuario> usuarios = [
-      Usuario(
-          online: false, email: 'test1@test.com', nombre: 'Hernan', uid: '1'),
-      Usuario(online: true, email: 'test2@test.com', nombre: 'Juan', uid: '2'),
-      Usuario(
-          online: false, email: 'test3@test.com', nombre: 'Pedro', uid: '3'),
-      Usuario(
-          online: false, email: 'test4@test.com', nombre: 'Nahuel', uid: '4'),
-    ];
-
     return BlocListener<LoginBloc, LoginState>(
       listenWhen: (previous, current) => (current is OnLogoutState),
       listener: (_, state) {
         print('Se disparo el listener para logout');
         Navigator.pushReplacementNamed(context, 'login');
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<LoginBloc, LoginState>(
-            buildWhen: (previous, current) =>
-                (current is OnLoginState || current is OnRenewTokenState),
-            builder: (_, state) {
-              return Text(state.nombre);
-            },
-          ),
-          centerTitle: true,
-          backgroundColor: estilo.colorPrimarioUno.withOpacity(0.9),
-          elevation: 1,
-          leading: IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () =>
-                BlocProvider.of<LoginBloc>(context).add(OnLogoutEvent()),
-          ),
-          actions: [
-            IconButton(
-                icon: Icon(
-                  Icons.cloud,
-                  color: Colors.blue,
-                ),
-                onPressed: () =>
-                    null //Navigator.pushReplacementNamed(context, 'login'),
-                ),
-          ],
-        ),
-        body: Container(
-          child: SmartRefresher(
-            controller: _refreshController,
-            enablePullDown: true,
-            header: WaterDropHeader(
-              complete: Icon(
-                Icons.check,
-                color: Colors.blue,
-              ),
-              waterDropColor: Colors.blue,
+      child: BlocListener<ChatBloc, ChatState>(
+        listenWhen: (previous, current) =>
+            (current is OnEstablecerReceptorState),
+        listener: (_, state) async {
+          await Navigator.pushNamed(context, 'chat');
+
+          BlocProvider.of<ChatBloc>(context).add(OnInitChatEvent());
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: BlocBuilder<LoginBloc, LoginState>(
+              buildWhen: (previous, current) =>
+                  (current is OnLoginState || current is OnRenewTokenState),
+              builder: (_, state) {
+                BlocProvider.of<UsuarioBloc>(context, listen: false)
+                    .add(OnListaUsuariosEvent());
+                return Text(state.nombre);
+              },
             ),
-            onRefresh: _cargarUsuario,
-            child: _ListaUsuarios(usuarios: usuarios),
+            centerTitle: true,
+            backgroundColor: estilo.colorPrimarioUno.withOpacity(0.9),
+            elevation: 1,
+            leading: IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () =>
+                  BlocProvider.of<LoginBloc>(context).add(OnLogoutEvent()),
+            ),
+            actions: [
+              BlocBuilder<ServerStatusBloc, ServerStatusState>(
+                buildWhen: (previous, current) => (current is OnStatusChange),
+                builder: (_, state) {
+                  print('Se redibuja el boton de estado conexion');
+                  return IconButton(
+                      icon: Icon(
+                        state.serverStatus == ServerStatus.Online
+                            ? Icons.cloud_done_outlined
+                            : Icons.cloud_off,
+                        color: state.serverStatus == ServerStatus.Online
+                            ? Colors.blue
+                            : Colors.redAccent,
+                      ),
+                      onPressed: null);
+                },
+              ),
+            ],
+          ),
+          body: Container(
+            child: BlocBuilder<UsuarioBloc, UsuarioState>(
+              buildWhen: (previous, current) =>
+                  (current is OnObtenerUsuariosState),
+              builder: (context, state) {
+                if (state.msError == null || state.msError.isEmpty) {
+                  _refreshController.refreshCompleted();
+                  return SmartRefresher(
+                    controller: _refreshController,
+                    enablePullDown: true,
+                    header: WaterDropHeader(
+                      complete: Icon(
+                        Icons.check,
+                        color: Colors.blue,
+                      ),
+                      waterDropColor: Colors.blue,
+                    ),
+                    onRefresh: () => _cargarUsuario(context),
+                    child: LoadingWidget(
+                      estado: (!state.isLoading),
+                      child: _ListaUsuarios(usuarios: state?.usuarios ?? []),
+                    ),
+                  );
+                } else {
+                  return Center(
+                    child: Text(state.msError),
+                  );
+                }
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  _cargarUsuario() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use refreshFailed()
-    // _refreshController.refreshCompleted();
+  void _cargarUsuario(BuildContext context) async {
+    BlocProvider.of<UsuarioBloc>(context, listen: false)
+        .add(OnListaUsuariosEvent());
   }
 }
 
@@ -101,6 +130,11 @@ class _ListaUsuarios extends StatelessWidget {
       itemBuilder: (_, i) {
         return ItemListaUsuariosWidget(
           usuario: usuarios[i],
+          onTap: () {
+            BlocProvider.of<ChatBloc>(context).add(OnEstablecerReceptorEvent(
+                BlocProvider.of<LoginBloc>(context).state.usuario,
+                usuarios[i]));
+          },
         );
       },
     );

@@ -45,6 +45,8 @@ class LoginState {
   LoginState initState() => LoginState();
 }
 
+
+
 class OnValidacionState extends LoginState {
   OnValidacionState({LoginState state})
       : super(
@@ -55,6 +57,11 @@ class OnValidacionState extends LoginState {
             codeError: state.codeError,
             valido: state.valido);
 }
+
+
+
+
+
 
 class OnLoginState extends LoginState {
   OnLoginState({LoginState state})
